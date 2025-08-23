@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEL社會情緒學習教學活動設計神助手系統</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- PptxGenJS Library -->
+    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    
+<style>
+    /* --- SEL Color Palette --- */
+    :root {
+        --font-family: 'Noto Sans TC', 'Arial', sans-serif;
+        --primary-color: #2A9D8F; --secondary-color: #83C5BE; --accent-color: #E9C46A;
+        --background-gradient: linear-gradient(135deg, #FEFBF6, #F0F4F8);
+        --container-bg: #FFFFFF; --text-color: #3A3A3A; --text-light: #585858;
+        --border-color: #DEE2E6; --input-bg: #F8F9FA; --bot-bubble-bg: #EDF6F5;
+        --user-bubble-bg: var(--primary-color); --button-option-bg: var(--secondary-color);
+        --button-option-hover-bg: #6BAA9F; --button-reset-bg: #E76F51;
+        --button-reset-hover-bg: #D85D40; --button-action-copy-bg: #F4A261;
+        --button-action-copy-hover-bg: #E4914F; --button-action-download-bg: var(--primary-color);
+        --button-action-download-hover-bg: #238478;
+        --button-action-ppt-bg: #E76F51; 
+        --button-action-ppt-hover-bg: #D85D40;
+        --success-color: #2A9D8F; --error-color: #E76F51; --disabled-color: #ADB5BD;
+        --border-radius: 8px; --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        --box-shadow-light: 0 1px 4px rgba(0, 0, 0, 0.05);
+        --robot-face-gradient: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        --robot-eye-border: #238478; --robot-pupil-color: #333;
+        --robot-mouth-color: var(--accent-color); --robot-antenna-color: var(--secondary-color);
+        --robot-antenna-tip-color: var(--accent-color);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-family); margin: 0; padding: 25px; background: var(--background-gradient); color: var(--text-color); line-height: 1.6; font-size: 16px; }
+    h1, h2, h3 { color: var(--primary-color); font-weight: 700; margin-top: 0; }
+    h1 { text-align: center; font-size: 2.2em; margin-bottom: 10px; } h1 i { margin-right: 12px; color: var(--secondary-color); animation: spin 3s infinite linear; }
+    h2 { font-size: 1.6em; margin-bottom: 15px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 8px; } h3 { font-size: 1.3em; margin-bottom: 12px; color: #238478; font-weight: 600;}
+    p { margin: 0 0 12px 0; color: var(--text-light); } ul { padding-left: 20px; list-style: none; } li { margin-bottom: 8px; }
+    button { font-family: var(--font-family); cursor: pointer; border: none; border-radius: var(--border-radius); padding: 10px 15px; transition: all 0.2s ease-in-out; } button:disabled { cursor: not-allowed; opacity: 0.7; }
+    input[type="text"], input[type="password"] { font-family: var(--font-family); padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-size: 1em; } input[type="text"]:disabled, input[type="password"]:disabled { background-color: #E9ECEF; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .container { background: var(--container-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); margin-bottom: 25px; max-width: 850px; margin-left: auto; margin-right: auto; }
+    #progress-indicator { text-align: center; color: var(--text-light); font-size: 0.9em; margin-bottom: 20px; background-color: var(--bot-bubble-bg); padding: 5px 10px; border-radius: 4px; display: inline-block; position: relative; left: 50%; transform: translateX(-50%); }
+    .chat-log { border: 1px solid var(--border-color); padding: 15px; margin-bottom: 0; height: 450px; overflow-y: auto; background: #FDFDFD; border-radius: var(--border-radius) var(--border-radius) 0 0; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04); }
+    .message { display: flex; align-items: flex-end; margin-bottom: 20px; animation: fadeIn 0.4s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .bot-message { flex-direction: row; } .user-message { flex-direction: row-reverse; }
+    .bot-avatar { width: 40px; height: 40px; margin-right: 12px; position: relative; flex-shrink: 0; }
+    .bot-avatar .face { width: 32px; height: 32px; background: var(--robot-face-gradient); border-radius: 50%; position: absolute; top: 4px; left: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); overflow: hidden; }
+    .bot-avatar .eye { width: 6px; height: 6px; background-color: #fff; border-radius: 50%; position: absolute; top: 10px; border: 1px solid var(--robot-eye-border); animation: blinkEyes 2s infinite; z-index: 1; }
+    .bot-avatar .eye-left { left: 8px; } .bot-avatar .eye-right { left: 18px; }
+    .bot-avatar .pupil { width: 3px; height: 3px; background-color: var(--robot-pupil-color); border-radius: 50%; position: absolute; top: 1.5px; left: 1.5px; animation: movePupils 5s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); display: block; z-index: 2; }
+    @keyframes movePupils { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(0.75px, -0.5px); } 40% { transform: translate(-0.75px, 0.75px); } 60% { transform: translate(0.75px, 0.5px); } 80% { transform: translate(-0.5px, -0.75px); } }
+    .bot-avatar .mouth { width: 12px; height: 4px; background-color: var(--robot-mouth-color); border-radius: 2px; position: absolute; top: 21px; left: 10px; transform: rotate(-5deg); }
+    .bot-avatar::before { content: ''; width: 2px; height: 10px; background-color: var(--robot-antenna-color); position: absolute; top: -5px; left: 19px; animation: antennaWiggle 1s infinite alternate; transform-origin: bottom; }
+    .bot-avatar::after { content: ''; width: 6px; height: 6px; background-color: var(--robot-antenna-tip-color); border-radius: 50%; position: absolute; top: -8px; left: 17px; }
+    @keyframes blinkEyes { 0%, 10%, 100% { transform: scaleY(1); } 5% { transform: scaleY(0.1); } }
+    @keyframes antennaWiggle { 0% { transform: rotate(-5deg); } 100% { transform: rotate(5deg); } }
+    .bubble { max-width: calc(100% - 70px); padding: 10px 18px; border-radius: 15px; font-size: 0.95em; line-height: 1.5; box-shadow: var(--box-shadow-light); word-wrap: break-word; border: 1px solid transparent; }
+    .bot-bubble { background: var(--bot-bubble-bg); color: var(--text-color); border-color: #E0E0E0; border-radius: 0 15px 15px 15px; }
+    .user-bubble { background: var(--user-bubble-bg); color: #fff; border-radius: 15px 0 15px 15px; }
+    .bot-bubble i, .user-bubble i { font-style: normal; color: var(--text-light); font-size: 0.9em; }
+    .typing-indicator-container { display: flex; align-items: center; padding: 5px 0; }
+    .typing-indicator-container span { height: 8px; width: 8px; margin: 0 2px; background-color: var(--text-light); border-radius: 50%; display: inline-block; animation: typing 1s infinite ease-in-out; }
+    .typing-indicator-container span:nth-child(1) { animation-delay: 0s; } .typing-indicator-container span:nth-child(2) { animation-delay: 0.1s; } .typing-indicator-container span:nth-child(3) { animation-delay: 0.2s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+    .controls-wrapper { background: #fdfdfd; border: 1px solid var(--border-color); border-top: none; padding: 15px; border-radius: 0 0 var(--border-radius) var(--border-radius); }
+    .api-key-section { margin-bottom: 15px; }
+    .api-key-section .info-box { padding: 10px; border-radius: var(--border-radius); border-left: 4px solid var(--primary-color); font-size: 0.9em; margin-bottom: 10px; background-color: rgba(42, 157, 143, 0.05); color: var(--text-color); }
+    .api-key-label-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .api-key-label-wrapper label { font-weight: 600; color: var(--primary-color); }
+    .api-options { display: flex; align-items: center; gap: 12px; }
+    .api-options .api-tutorial-link { color: var(--secondary-color); text-decoration: none; font-size: 0.9em; cursor: pointer; font-weight: 500;}
+    .api-options .api-tutorial-link:hover { text-decoration: underline; }
+    #api-key-input { width: 100%; box-sizing: border-box; }
+    .input-area { display: flex; gap: 12px; align-items: center; background: var(--input-bg); padding: 12px; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+    #user-input { flex-grow: 1; border: 1px solid var(--border-color); background: #fff; }
+    #user-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.2); outline: none; }
+    .input-area > div { display: flex; gap: 10px; }
+    #send-button { background: var(--primary-color); color: #fff; font-weight: 500; } #send-button:hover { background: #238478; }
+    #reset-button { background: var(--button-reset-bg); color: #fff; } #reset-button:hover { background: var(--button-reset-hover-bg); }
+    .option-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; justify-content: center; border-top: 1px dashed var(--border-color); padding-top: 15px; min-height: 30px; text-align: center; }
+    .option-buttons.loading::before { content: "AI 正在產生建議..."; font-style: italic; color: var(--text-light); font-size: 0.9em; width: 100%; }
+    .option-btn { background: var(--button-option-bg); color: #fff; font-size: 0.9em; padding: 8px 14px; box-shadow: none; border: 1px solid transparent; }
+    .option-btn:hover { background: var(--button-option-hover-bg); transform: translateY(-1px); }
+    .output-section { text-align: left; display: none; }
+    .output-section h2 { text-align: center; color: var(--primary-color); margin-bottom: 25px; }
+    .output-content-section { background: #F8F9FA; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 20px; margin-bottom: 25px; box-shadow: var(--box-shadow-light); }
+    .output-content-section h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .output-content-section h3 i { color: var(--secondary-color); font-size: 1.1em; }
+    .output-content-section ul { padding-left: 0; list-style-position: inside; }
+    .output-content-section .structured-list { padding-left: 0; list-style: none; }
+    .output-content-section .structured-list li { margin-bottom: 10px; padding-left: 1.8em; position: relative; }
+    .output-content-section .structured-list li::before { content: "✔"; color: var(--secondary-color); position: absolute; left: 0; top: 0; font-weight: bold; font-size: 1.1em; }
+    .output-content-section .structured-list li strong { display: inline; margin-bottom: 0; margin-right: 5px; font-weight: 600; }
+    .output-content-section .structured-list li span { white-space: normal; }
+    .action-buttons { margin-top: 20px; display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap; padding-top: 15px; border-top: 1px solid var(--border-color); }
+    .action-btn { padding: 10px 20px; font-size: 0.95em; font-weight: 500; color: #fff; }
+    #copy-button { background-color: var(--button-action-copy-bg); } #copy-button:hover { background-color: var(--button-action-copy-hover-bg); }
+    #download-doc-button { background-color: var(--button-action-download-bg); } #download-doc-button:hover { background-color: var(--button-action-download-hover-bg); }
+    #download-ppt-button { background-color: var(--button-action-ppt-bg); } #download-ppt-button:hover { background-color: var(--button-action-ppt-hover-bg); }
+    .copy-status { color: var(--success-color); font-weight: 500; min-height: 1.2em; display: inline-block; padding: 0 10px; transition: all 0.2s; }
+    /* NEW CSS RULE for better alignment */
+    .copy-status:empty { min-height: 0; padding: 0; margin: 0; }
+    .copyright { text-align: center; font-size: 0.8em; color: #888; margin-top: 30px; padding-bottom: 10px; } .copyright i { margin-right: 5px; color: var(--secondary-color); }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; animation: fadeInModal 0.3s; }
+    @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+    .modal-content { background: var(--container-bg); padding: 30px; border-radius: var(--border-radius); max-width: 600px; width: 90%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 80vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 10px; right: 15px; font-size: 1.8rem; color: var(--text-light); cursor: pointer; transition: transform 0.2s, color 0.2s; }
+    .modal-close:hover { transform: scale(1.2); color: var(--text-color); }
+    .modal-content h3 { margin-bottom: 15px; } .modal-content p, .modal-content li { margin-bottom: 10px; } .modal-content ol { padding-left: 20px; }
+    .modal-content code { background-color: var(--input-bg); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .modal-content a { color: var(--secondary-color); font-weight: 500; text-decoration: none; }
+    .modal-content a:hover { text-decoration: underline; }
+    @media (max-width: 768px) {
+        body { padding: 15px; } h1 { font-size: 1.6em; } .container { padding: 15px; } .chat-log { height: calc(100vh - 350px); }
+        .bot-avatar { width: 35px; height: 35px; margin-right: 10px; }
+        .bot-avatar .face { width: 28px; height: 28px; top: 3px; left: 3px; }
+        .bot-avatar .eye { width: 5px; height: 5px; top: 9px; } .bot-avatar .eye-left { left: 7px; } .bot-avatar .eye-right { left: 16px; }
+        .bot-avatar .pupil { width: 2.5px; height: 2.5px; top: 1.25px; left: 1.25px; }
+        .bot-avatar .mouth { width: 10px; height: 3px; top: 19px; left: 9px; }
+        .bot-avatar::before { height: 8px; top: -4px; left: 16px; } .bot-avatar::after { width: 5px; height: 5px; top: -7px; left: 15px; }
+        .bubble { font-size: 0.9em; padding: 8px 14px; max-width: calc(100% - 60px); }
+        .controls-wrapper { padding: 12px; }
+        .input-area { flex-direction: column; gap: 10px; } #user-input { width: 100%; box-sizing: border-box; }
+        .input-area > div { width: 100%; justify-content: space-between; }
+        #send-button, #reset-button { padding: 10px; font-size: 0.95em; flex-grow: 1; margin: 0 2%; }
+        .option-buttons { margin-top: 12px; padding-top: 12px; } .option-btn { font-size: 0.8em; padding: 7px 12px; }
+        .action-buttons { gap: 10px; } .action-btn { padding: 9px 16px; font-size: 0.9em; }
+    }
+</style>
+</head>
+<body>
+    <h1><i class="fas fa-lightbulb"></i>SEL社會情緒學習教學活動設計神助手系統</h1>
+    <div id="progress-indicator" style="display: none;">步驟 1 / 7</div>
+
+    <div class="container">
+        <div class="chat-log" id="chat-log">
+            <div class="message bot-message" id="typing-indicator" style="display: none;">
+                 <div class="bot-avatar"><div class="face"><div class="eye eye-left"><div class="pupil"></div></div><div class="eye eye-right"><div class="pupil"></div></div><div class="mouth"></div></div></div>
+                 <div class="bubble bot-bubble"><div class="typing-indicator-container"><span></span><span></span><span></span></div></div>
+            </div>
+        </div>
+        
+        <div class="controls-wrapper">
+            <div class="api-key-section">
+                <div class="info-box" id="api-info-box"><p id="api-info-text">請提供您的 Google Gemini API 金鑰，以啟用 AI 生成建議功能。</p></div>
+                <div class="api-key-label-wrapper">
+                    <label for="api-key-input">您的 API 金鑰 (必填)</label>
+                    <div class="api-options"><a href="#" class="api-tutorial-link">(如何取得？)</a></div>
+                </div>
+                <input type="password" autocomplete="off" id="api-key-input" placeholder="請貼上您從 Google AI Studio 取得的 API 金鑰">
+            </div>
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="請輸入回答或點選按鈕..." disabled>
+                <div>
+                    <button id="send-button" title="送出回答" disabled><i class="fas fa-paper-plane"></i> 送出</button>
+                    <button id="reset-button" title="重新開始"><i class="fas fa-sync-alt"></i> 重置</button>
+                </div>
+            </div>
+            <div class="option-buttons" id="option-buttons"></div>
+        </div>
+    </div>
+
+    <div class="container output-section" id="output-section">
+        <h2><i class="fas fa-file-alt"></i> SEL教學活動設計成果</h2>
+        <div id="output-content"></div>
+        <!-- MODIFIED: Reordered buttons for better flow and balance -->
+        <div class="action-buttons">
+            <button class="action-btn" id="copy-button" title="複製 Markdown 格式內容"><i class="fas fa-copy"></i> 複製 Markdown</button>
+            <span id="copy-status" class="copy-status"></span>
+            <button class="action-btn" id="download-ppt-button" title="下載為 PowerPoint (.pptx) 簡報"><i class="fas fa-file-powerpoint"></i> 下載簡報</button>
+            <button class="action-btn" id="download-doc-button" title="下載為 Word (.doc) 文件"><i class="fas fa-file-word"></i> 下載 Word</button>
+        </div>
+    </div>
+
+    <div class="copyright"><i class="fas fa-copyright"></i> Copyright © Liyuchiutiger Gongminshen</div>
+
+    <div class="modal-overlay" id="api-key-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3>如何取得免費的 Google Gemini API 金鑰？</h3>
+            <p>按照以下簡單步驟，即可取得您自己的免費金鑰，享受更穩定、個人化的服務。</p>
+            <ol>
+                <li>前往 <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio 的 API 金鑰頁面</a>。</li>
+                <li>使用您的 Google 帳號登入。</li>
+                <li>點擊頁面上的 <strong>「建立 API 金鑰」(Create API key)</strong> 按鈕。</li>
+                <li>系統會立即產生一組新的金鑰。點擊金鑰旁邊的複製圖示。</li>
+                <li>回到本頁面，將複製的金鑰貼到輸入框中即可！</li>
+            </ol>
+            <p><strong>提醒：</strong>請妥善保管您的 API 金鑰，不要與他人分享。</p>
+        </div>
+    </div>
+    
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
+    <script type="module">
+        import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+
+        // The JavaScript code is identical to the previous version.
+        // I've just included it here to provide the complete, functional file.
+        const dom = {
+            chatLog: document.getElementById('chat-log'), userInput: document.getElementById('user-input'),
+            sendButton: document.getElementById('send-button'), resetButton: document.getElementById('reset-button'),
+            optionButtons: document.getElementById('option-buttons'), outputSection: document.getElementById('output-section'),
+            outputContent: document.getElementById('output-content'), copyButton: document.getElementById('copy-button'),
+            copyStatus: document.getElementById('copy-status'),
+            progressIndicator: document.getElementById('progress-indicator'), typingIndicator: document.getElementById('typing-indicator'),
+            apiKeyInput: document.getElementById('api-key-input'), apiInfoBox: document.getElementById('api-info-box'),
+            apiInfoText: document.getElementById('api-info-text'), apiKeyModal: document.getElementById('api-key-modal'),
+            openApiKeyModalLink: document.querySelector('.api-tutorial-link'),
+            downloadDocButton: document.getElementById('download-doc-button'),
+            downloadPptButton: document.getElementById('download-ppt-button'),
+        };
+        
+        let genAI = null, model = null, conversationHistory = [], currentStep = 0;
+        let generatedData = {}, isBotTyping = false, isWaitingForAI = false;
+
+        const generationConfig = { temperature: 0.7, topK: 1, topP: 1, maxOutputTokens: 250 };
+        const safetySettings = [
+           { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+           { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+           { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+           { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+        ];
+
+        const questions = [ "我們來設計一個 SEL 活動吧！您想聚焦在哪個 SEL 核心素養上呢？", "這個活動主要適合哪個年齡層的學生呢？", "針對「{selTheme}」，您希望學生達成什麼「具體的學習目標」？（例如：學習用「我訊息」表達感受）", "太棒了！為了達成「{learningGoal}」，您偏好哪種「活動形式」？", "請為這個關於「{selTheme}」的活動取一個吸引人的「活動名稱」吧！", "為了讓活動更貼近生活，請描述一個跟「{selTheme}」相關的「情境或短篇故事」作為引導。", "很棒的情境！最後，請設計 1-3 個能引導學生反思的「討論問題」。（可用換行分隔）" ];
+        const TOTAL_STEPS = questions.length;
+        const STEPS_REQUIRING_AI = [2, 4, 5, 6];
+        const suggestionMap = { selThemes: ["自我覺察 (Self-awareness)", "自我管理 (Self-management)", "社會覺察 (Social awareness)", "人際技巧 (Relationship skills)", "負責任的決策 (Responsible decision-making)"], ageGroups: ["國小低年級 (1-2年級)", "國小中年級 (3-4年級)", "國小高年級 (5-6年級)", "國中 (7-9年級)", "高中 (10-12年級)"], activityFormats: ["角色扮演", "小組討論", "情境分析", "繪本/故事閱讀", "影片觀賞與討論", "藝術創作 (繪畫/手作)", "靜心/正念練習"] };
+        const exampleAnswers = [ "人際技巧 (Relationship skills)", "國小中年級 (3-4年級)", "學習同理傾聽與給予回饋", "角色扮演", "傾聽魔法耳", "小明很興奮地想跟小華分享他新買的玩具，但小華正低頭看書，沒有理他。", "1. 如果你是小明，你會有什麼感覺？\n2. 如果你是小華，你覺得小明為什麼要找你？\n3. 什麼樣的回應方式，可以讓兩個好朋友都感到被尊重？" ];
+
+        const getActiveApiKey = () => dom.apiKeyInput.value.trim();
+        const initializeAI = () => {
+            const apiKey = getActiveApiKey(); if (!apiKey) { genAI = null; model = null; return false; }
+            try { if (!genAI || !model || genAI.apiKey !== apiKey) { genAI = new GoogleGenerativeAI(apiKey); model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); } return true; } catch (error) { console.error("Failed to initialize GoogleGenerativeAI:", error); genAI = null; model = null; appendMessage('bot', `<b style='color: var(--error-color);'>警告：</b> API 金鑰無效或初始化失敗。`); return false; }
+        };
+        const getData = (path, defaultValue = "<em>未提供</em>") => {
+            try { const keys = path.split('.'); let current = generatedData; for (const key of keys) { if (current === null || typeof current !== 'object' || !(key in current)) { return defaultValue; } current = current[key]; } return current === "" || current === null || current === undefined ? defaultValue : current; } catch (e) { return defaultValue; }
+        };
+        function showTypingIndicator() { if (!isBotTyping) { dom.typingIndicator.style.display = 'flex'; isBotTyping = true; dom.chatLog.scrollTo({ top: dom.chatLog.scrollHeight, behavior: 'smooth' }); } }
+        function hideTypingIndicator() { if (isBotTyping) { dom.typingIndicator.style.display = 'none'; isBotTyping = false; } }
+        function updateProgressIndicator() { if (currentStep < TOTAL_STEPS) { dom.progressIndicator.textContent = `步驟 ${currentStep + 1} / ${TOTAL_STEPS}`; dom.progressIndicator.style.display = 'inline-block'; } else { dom.progressIndicator.style.display = 'none'; } }
+        function setUIEnabled(enabled) { dom.userInput.disabled = !enabled; dom.sendButton.disabled = !enabled; dom.optionButtons.querySelectorAll('button').forEach(btn => btn.disabled = !enabled); dom.resetButton.disabled = !enabled; isWaitingForAI = !enabled; }
+        function appendMessage(sender, message) {
+            const messageDiv = document.createElement('div'); messageDiv.classList.add('message', `${sender}-message`);
+            if (sender === 'bot') { const avatar = document.createElement('div'); avatar.classList.add('bot-avatar'); avatar.innerHTML = `<div class="face"><div class="eye eye-left"><div class="pupil"></div></div><div class="eye eye-right"><div class="pupil"></div></div><div class="mouth"></div></div>`; messageDiv.appendChild(avatar); }
+            const bubble = document.createElement('div'); bubble.classList.add('bubble', `${sender}-bubble`); bubble.innerHTML = message; messageDiv.appendChild(bubble);
+            const typingElem = dom.typingIndicator; if (typingElem && dom.chatLog.contains(typingElem)) { dom.chatLog.insertBefore(messageDiv, typingElem); } else { dom.chatLog.appendChild(messageDiv); }
+        }
+        async function getDynamicSuggestions(step, context) {
+            if (!initializeAI()) { appendMessage('bot', `<b style='color: var(--error-color);'>無法生成AI建議：</b> 請先提供有效的 API 金鑰。`); return []; }
+            const { selTheme = "社會情緒學習", ageGroup = "學生", learningGoal = "學習目標" } = context;
+            let prompt = ""; const outputFormatInstruction = "請提供最多4個相關的、簡潔的建議（每個約10-20字）。請用繁體中文回答。將建議嚴格格式化為一個 JavaScript 陣列字串，例如：`['建議一', '建議二']`。不要包含任何其他說明文字。";
+            switch (step) { case 2: prompt = `針對「${ageGroup}」的學生，要學習 SEL 主題「${selTheme}」，請建議一些具體且可執行的學習目標。${outputFormatInstruction}`; break; case 4: prompt = `為一個 SEL 活動取名，該活動主題是「${selTheme}」，目標是「${learningGoal}」。請提供約4個創意且吸引人的活動名稱。${outputFormatInstruction}`; break; case 5: prompt = `為一個給「${ageGroup}」的 SEL 活動設計一個情境故事開頭，主題是「${selTheme}」。故事要生活化、簡短且能引發思考。請提供約4個不同的情境。${outputFormatInstruction}`; break; case 6: prompt = `針對一個關於「${selTheme}」的活動，其情境是「${context.scenario}」。請設計約4個能引導「${ageGroup}」學生深入反思的開放式討論問題。${outputFormatInstruction}`; break; default: return []; }
+            setUIEnabled(false); dom.optionButtons.innerHTML = ''; dom.optionButtons.classList.add('loading');
+            try {
+                const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig, safetySettings, });
+                const response = result.response; if (!response || !response.candidates || response.candidates.length === 0 || response.candidates[0].finishReason !== 'STOP') { dom.optionButtons.innerHTML = `<small style='color: var(--error-color);'><i>AI 建議生成失敗，請手動輸入。</i></small>`; return []; }
+                const responseText = response.text().trim(); const match = responseText.match(/\[\s*(['"].*?['"]\s*,\s*)*(['"].*?['"])\s*\]/); let suggestions = [];
+                if (match && match[0]) { try { suggestions = JSON.parse(match[0].replace(/'/g, '"')); } catch (e) { /* ignore */ } }
+                if (!Array.isArray(suggestions) || suggestions.length === 0) { suggestions = responseText.split('\n').map(s => s.replace(/^-?\s*['"`]?/, '').replace(/['"`]?\s*,?$/, '').trim()).filter(s => s && !s.startsWith('[') && !s.endsWith(']')); }
+                return suggestions.slice(0, 4);
+            } catch (error) { dom.optionButtons.innerHTML = "<small style='color: var(--error-color);'><i>AI 建議生成失敗，請檢查網路或 API 金鑰。</i></small>"; return []; } finally { dom.optionButtons.classList.remove('loading'); setUIEnabled(true); }
+        }
+        async function fetchAndShowOptions(step) {
+            dom.optionButtons.innerHTML = ''; dom.optionButtons.style.borderTop = 'none'; const context = { selTheme: getData("selTheme"), ageGroup: getData("ageGroup"), learningGoal: getData("learningGoal"), scenario: getData("scenario") }; let opts = [];
+            if (step === 0) { opts = suggestionMap.selThemes; } else if (step === 1) { opts = suggestionMap.ageGroups; } else if (step === 3) { opts = suggestionMap.activityFormats; } else if (STEPS_REQUIRING_AI.includes(step)) { opts = await getDynamicSuggestions(step, context); }
+            if (opts.length > 0) { dom.optionButtons.style.borderTop = '1px dashed var(--border-color)'; opts.forEach(option => { const btn = document.createElement('button'); btn.classList.add('option-btn'); btn.textContent = option; btn.onclick = () => { if (!isWaitingForAI) { processUserInput(option); } }; dom.optionButtons.appendChild(btn); }); } else if (step < TOTAL_STEPS && !dom.optionButtons.innerHTML.includes('失敗')) { dom.optionButtons.innerHTML = "<small><i>（請直接在上方輸入框輸入您的回答）</i></small>"; }
+            setUIEnabled(true);
+        }
+        function processUserInput(userMessageFromButton = null) {
+            if (isWaitingForAI) return; const messageText = userMessageFromButton || dom.userInput.value.trim();
+            if (!messageText && currentStep < exampleAnswers.length) { const exampleMessage = exampleAnswers[currentStep]; appendMessage('user', `<i>(使用範例: ${exampleMessage})</i>`); conversationHistory.push({ sender: 'user', message: exampleMessage }); dom.userInput.value = ''; dom.optionButtons.innerHTML = ''; dom.optionButtons.style.borderTop = 'none'; setUIEnabled(false); processBotResponse(exampleMessage); return; }
+            else if (!messageText) { appendMessage('bot', '請輸入您的回答，或點選建議按鈕喔！'); dom.userInput.focus(); return; }
+            appendMessage('user', messageText); conversationHistory.push({ sender: 'user', message: messageText }); dom.userInput.value = ''; dom.optionButtons.innerHTML = ''; dom.optionButtons.style.borderTop = 'none'; setUIEnabled(false); processBotResponse(messageText);
+        }
+        function processBotResponse(userReply) {
+            updateGeneratedData(currentStep, userReply); currentStep++; updateProgressIndicator();
+            if (currentStep < TOTAL_STEPS) { let nextQuestion = questions[currentStep]; nextQuestion = nextQuestion.replace('{selTheme}', `<b>${getData("selTheme")}</b>`); nextQuestion = nextQuestion.replace('{learningGoal}', `<b>${getData("learningGoal")}</b>`); showTypingIndicator(); setTimeout(() => { hideTypingIndicator(); appendMessage('bot', nextQuestion); dom.chatLog.scrollTo({ top: dom.chatLog.scrollHeight, behavior: 'smooth' }); fetchAndShowOptions(currentStep); }, 800 + Math.random() * 300); } else { showTypingIndicator(); setTimeout(() => { hideTypingIndicator(); appendMessage('bot', '太棒了！所有資料都收集完畢。我正在為您生成教學活動教案與學習單...'); setUIEnabled(false); displayGeneratedOutput(); setUIEnabled(true); dom.chatLog.scrollTo({ top: dom.chatLog.scrollHeight, behavior: 'smooth' }); }, 1000); }
+        }
+        function updateGeneratedData(step, reply) {
+             switch (step) { case 0: generatedData["selTheme"] = reply; break; case 1: generatedData["ageGroup"] = reply; break; case 2: generatedData["learningGoal"] = reply; break; case 3: generatedData["activityFormat"] = reply; break; case 4: generatedData["activityName"] = reply; break; case 5: generatedData["scenario"] = reply; break;
+                 case 6: generatedData["discussionQuestions"] = reply.split('\n').map(q => q.trim().replace(/^\d+\.\s*/, '')).filter(q => q); const { selTheme, ageGroup, learningGoal, activityFormat, activityName, scenario, discussionQuestions } = generatedData;
+                     generatedData["lessonPlan"] = { title: `「${activityName}」教學活動設計`, time: "約 40 分鐘", materials: "學習單、筆、(可選)白板或海報紙", flow: [ `**準備活動 (5分鐘):** 引起動機。教師可以提問：「大家有沒有遇過...這樣的情況？」簡單連結到「${selTheme}」主題，並介紹今天的活動名稱是「${activityName}」。`, `**發展活動 (20分鐘):** 核心活動。教師講述「${scenario}」這個情境故事，接著說明今天的活動是「${activityFormat}」。將學生分組，並請他們根據情境進行練習或討論。教師從旁觀察並給予適時引導。`, `**綜合活動 (15分鐘):** 歸納與反思。邀請各組分享他們的想法或表演成果。教師運用「${discussionQuestions.join('」、「')}」等問題，引導全班進行深度討論，並總結今天學習到關於「${learningGoal}」的重點。` ] };
+                     generatedData["worksheet"] = { title: `${activityName} - 學習單`, intro: `同學你好！在今天的「${selTheme}」活動中，我們一起探討了「${learningGoal}」的重要性。請靜下心來，回想並寫下你的想法。`, questions: [ { q: `情境回顧：對於今天聽到的故事：「${scenario}」，你印象最深刻的部分是什麼？為什麼？`}, { q: `核心問題：針對老師提出的問題：「${discussionQuestions[0] || '第一個討論問題'}」，你的想法是什麼？請寫下來。`}, { q: `生活連結：你覺得今天學到的「${learningGoal}」，在生活中的什麼時候可以用到？請舉一個例子。`}, { q: `心情與收穫：完成這次活動後，你最大的收穫是什麼？有什麼新的感覺或想法嗎？`} ] };
+                     break;
+             }
+        }
+        function generateMarkdownOutput() { return `# SEL 教學活動設計: ${getData("activityName")}\n\n## 一、 活動基本資訊\n- **SEL 核心素養:** ${getData("selTheme")}\n- **適用年級:** ${getData("ageGroup")}\n- **具體學習目標:** ${getData("learningGoal")}\n- **活動形式:** ${getData("activityFormat")}\n\n## 二、 教學活動教案\n- **活動名稱:** ${getData("activityName")}\n- **預估時間:** ${getData("lessonPlan.time")}\n- **準備材料:** ${getData("lessonPlan.materials")}\n- **活動流程:**\n    1.  ${getData("lessonPlan.flow.0", "")}\n    2.  ${getData("lessonPlan.flow.1", "")}\n    3.  ${getData("lessonPlan.flow.2", "")}\n\n## 三、 學生學習單\n---\n### ${getData("worksheet.title")}\n**班級:** __________ **姓名:** __________ **座號:** ____\n\n**引導語：** ${getData("worksheet.intro")}\n\n1.  **情境回顧：**\n    > ${getData("worksheet.questions.0.q")}\n\n2.  **核心問題：**\n    > ${getData("worksheet.questions.1.q")}\n\n3.  **生活連結：**\n    > ${getData("worksheet.questions.2.q")}\n\n4.  **心情與收穫：**\n    > ${getData("worksheet.questions.3.q")}\n\n---`;}
+        function generateWordContent() { const lessonFlowHtml = getData("lessonPlan.flow", []).map(step => `<li style="margin-bottom: 12px;">${step.replace(/\n/g, '<br>')}</li>`).join(''); const worksheetQuestionsHtml = getData("worksheet.questions", []).map(item => `<li style="margin-bottom: 20px;"><strong>${item.q}</strong><br><br><br><br><hr style="border:none; border-top: 1px dotted #ccc;"></li>`).join(''); return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset='UTF-8'><title>SEL教學活動-${getData("activityName")}</title><style>body{font-family:'Arial','Noto Sans TC',sans-serif;line-height:1.6;margin:40px;color:#333;}h1,h2,h3,h4{color:#2A9D8F;margin:0 0 15px 0;}h1{text-align:center;font-size:1.8em;}h2{border-bottom:2px solid #83C5BE;padding-bottom:8px;margin-top:35px;font-size:1.5em;}h3{color:#238478;margin-top:25px;font-size:1.2em;}ul, ol{padding-left: 20px;} li{margin-bottom:8px;} strong{font-weight:bold;color:#2A9D8F;}p{margin: 0 0 10px 0;} .worksheet-header{margin-bottom:20px;text-align:center;} .worksheet-header p {display:inline-block; margin: 0 20px;}</style></head><body><h1>SEL 教學活動設計: ${getData("activityName")}</h1><h2>一、 活動基本資訊</h2><ul><li><strong>SEL 核心素養:</strong> ${getData("selTheme")}</li><li><strong>適用年級:</strong> ${getData("ageGroup")}</li><li><strong>具體學習目標:</strong> ${getData("learningGoal")}</li><li><strong>活動形式:</strong> ${getData("activityFormat")}</li></ul><h2>二、 教學活動教案</h2><ul><li><strong>活動名稱:</strong> ${getData("activityName")}</li><li><strong>預估時間:</strong> ${getData("lessonPlan.time")}</li><li><strong>準備材料:</strong> ${getData("lessonPlan.materials")}</li></ul><h3>活動流程</h3><ol>${lessonFlowHtml}</ol><p style="page-break-before: always;"></p><h2>三、 學生學習單</h2><div class="worksheet-header"><h3>${getData("worksheet.title")}</h3><p>班級: __________</p><p>姓名: __________</p><p>座號: ____</p></div><p><strong>引導語：</strong> <em>${getData("worksheet.intro")}</em></p><hr style="margin: 20px 0;"><ol>${worksheetQuestionsHtml}</ol></body></html>`;}
+
+        async function generateAndDownloadPptx() {
+            const button = dom.downloadPptButton; const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成...'; button.disabled = true;
+            try {
+                let pptx = new PptxGenJS();
+                const primaryColor = "2A9D8F", textColor = "3A3A3A", textLightColor = "585858";
+                pptx.layout = "LAYOUT_16x9";
+                let titleSlide = pptx.addSlide();
+                titleSlide.background = { color: "FEFBF6" };
+                titleSlide.addText(getData("activityName"), { x: 0, y: '30%', w: '100%', align: 'center', fontSize: 48, fontFace: 'Noto Sans TC', color: primaryColor, bold: true });
+                titleSlide.addText(getData("selTheme"), { x: 0, y: '50%', w: '100%', align: 'center', fontSize: 24, fontFace: 'Noto Sans TC', color: textLightColor });
+                const addContentSlide = (title, content) => { let slide = pptx.addSlide(); slide.background = { color: "F0F4F8" }; slide.addText(title, { x: 0.5, y: 0.5, w: '90%', h: 0.75, fontSize: 28, fontFace: 'Noto Sans TC', color: primaryColor, bold: true }); slide.addText(content, { x: 0.5, y: 1.5, w: '90%', h: 3.5, fontSize: 22, fontFace: 'Noto Sans TC', color: textColor, valign: 'top', align: 'left', }); };
+                addContentSlide("今日學習目標", getData("learningGoal"));
+                addContentSlide("情境想一想", getData("scenario"));
+                const activityIntro = `接下來，我們將進行「${getData("activityFormat")}」\n\n請大家依照老師的指示分組與準備。`;
+                addContentSlide("活動開始", activityIntro);
+                const questions = getData("discussionQuestions", []);
+                questions.forEach((q, index) => { addContentSlide(`分組討論 (${index + 1}/${questions.length})`, q); });
+                let finalSlide = pptx.addSlide(); finalSlide.background = { color: "FEFBF6" };
+                finalSlide.addText("很棒的分享！", { x: 0, y: '40%', w: '100%', align: 'center', fontSize: 36, fontFace: 'Noto Sans TC', color: primaryColor, });
+                finalSlide.addText("謝謝大家的參與！", { x: 0, y: '55%', w: '100%', align: 'center', fontSize: 24, fontFace: 'Noto Sans TC', color: textLightColor });
+                await pptx.writeFile({ fileName: `SEL簡報-${getData("activityName", "未命名")}.pptx` });
+            } catch (error) { console.error("Failed to generate PPTX:", error); alert("抱歉，生成簡報時發生錯誤。");
+            } finally { button.innerHTML = originalText; button.disabled = false; }
+        }
+
+        function displayGeneratedOutput() {
+            dom.outputSection.style.display = 'block'; dom.outputContent.innerHTML = '';
+            const createSection = (id, title, icon, content) => { const div = document.createElement('div'); div.className = 'output-content-section'; div.id = id; div.innerHTML = `<h3><i class="${icon}"></i> ${title}</h3>${content}`; return div; };
+            let basicInfoContent = `<ul class="structured-list"><li><strong>SEL 核心素養：</strong><span>${getData("selTheme")}</span></li><li><strong>適用年級：</strong><span>${getData("ageGroup")}</span></li><li><strong>具體學習目標：</strong><span>${getData("learningGoal")}</span></li><li><strong>活動形式：</strong><span>${getData("activityFormat")}</span></li></ul>`;
+            dom.outputContent.appendChild(createSection('output-basic-info', '1. 活動基本資訊', 'fas fa-info-circle', basicInfoContent));
+            let lessonPlanContent = `<ul class="structured-list"><li><strong>活動名稱：</strong><span>${getData("activityName")}</span></li><li><strong>預估時間：</strong><span>${getData("lessonPlan.time")}</span></li><li><strong>準備材料：</strong><span>${getData("lessonPlan.materials")}</span></li><li><strong>活動流程：</strong><ol style="padding-left: 20px; margin-top: 10px;">${getData("lessonPlan.flow", []).map(step => `<li style="margin-bottom: 10px;">${step.replace(/\n/g, '<br>')}</li>`).join('')}</ol></li></ul>`;
+            dom.outputContent.appendChild(createSection('output-lesson-plan', '2. 教學活動教案', 'fas fa-clipboard-list', lessonPlanContent));
+            let worksheetContent = `<h4>${getData("worksheet.title")}</h4><p><em>${getData("worksheet.intro")}</em></p><ol style="padding-left: 20px; margin-top: 15px;">${getData("worksheet.questions", []).map(item => `<li style="margin-bottom: 15px;"><strong>${item.q}</strong><br><br><hr style="border:none; border-top: 1px dotted #ccc;"></li>`).join('')}</ol>`;
+            dom.outputContent.appendChild(createSection('output-worksheet', '3. 學生學習單（預覽）', 'fas fa-edit', worksheetContent));
+            
+            const markdownOutput = generateMarkdownOutput();
+            const wordFileContent = generateWordContent();
+            
+            dom.copyButton.onclick = async () => { try { await navigator.clipboard.writeText(markdownOutput); dom.copyStatus.textContent = '已複製！'; dom.copyStatus.style.color = 'var(--success-color)'; setTimeout(() => { dom.copyStatus.textContent = ''; }, 2000); } catch (err) { dom.copyStatus.textContent = '複製失敗'; dom.copyStatus.style.color = 'var(--error-color)'; } };
+            dom.downloadDocButton.onclick = () => { try { const blob = new Blob(['\ufeff', wordFileContent], { type: 'application/msword;charset=utf-8' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `SEL教學活動-${getData("activityName", "未命名")}.doc`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch (error) { alert("無法產生下載文件。"); } };
+            dom.downloadPptButton.onclick = generateAndDownloadPptx;
+
+            setTimeout(() => { dom.outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+        }
+
+        function resetConversation() {
+            console.log("Resetting conversation...");
+            conversationHistory = []; currentStep = 0;
+            generatedData = { selTheme: "", ageGroup: "", learningGoal: "", activityFormat: "", activityName: "", scenario: "", discussionQuestions: [], lessonPlan: {}, worksheet: {} };
+            dom.chatLog.innerHTML = '';
+            const typingElem = document.createElement('div'); typingElem.className = 'message bot-message'; typingElem.id = 'typing-indicator'; typingElem.style.display = 'none';
+            typingElem.innerHTML = `<div class="bot-avatar"><div class="face"><div class="eye eye-left"><div class="pupil"></div></div><div class="eye eye-right"><div class="pupil"></div></div><div class="mouth"></div></div></div><div class="bubble bot-bubble"><div class="typing-indicator-container"><span></span><span></span><span></span></div></div>`;
+            dom.chatLog.appendChild(typingElem);
+            hideTypingIndicator();
+            dom.outputSection.style.display = 'none'; dom.outputContent.innerHTML = ""; dom.copyStatus.textContent = '';
+            dom.optionButtons.innerHTML = ''; dom.optionButtons.style.borderTop = 'none'; setUIEnabled(false);
+            dom.apiKeyInput.value = ''; dom.apiKeyInput.disabled = false;
+            dom.apiKeyInput.placeholder = '請貼上您從 Google AI Studio 取得的 API 金鑰';
+            dom.apiInfoBox.classList.remove('warning');
+            dom.apiInfoText.textContent = '請提供您的 Google Gemini API 金鑰，以啟用 AI 生成建議功能。';
+            appendMessage('bot', '哈囉！我是SEL社會情緒學習教學活動設計神助手，讓我們一起透過聊天，為孩子們設計出精彩的教學活動吧！');
+            updateProgressIndicator();
+            setTimeout(() => { appendMessage('bot', questions[0]); fetchAndShowOptions(0); dom.userInput.value = ''; dom.userInput.focus(); dom.chatLog.scrollTo({ top: dom.chatLog.scrollHeight, behavior: 'smooth' }); }, 800);
+        }
+
+        dom.sendButton.addEventListener('click', () => processUserInput());
+        dom.userInput.addEventListener('keypress', function(event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); processUserInput(); } });
+        dom.resetButton.addEventListener('click', resetConversation);
+        dom.openApiKeyModalLink.addEventListener('click', (e) => { e.preventDefault(); dom.apiKeyModal.style.display = 'flex'; });
+        dom.apiKeyModal.addEventListener('click', (e) => { if (e.target === dom.apiKeyModal || e.target.classList.contains('modal-close')) { dom.apiKeyModal.style.display = 'none'; } });
+        
+        resetConversation();
+    </script>
+</body>
+</html>
