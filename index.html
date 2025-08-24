@@ -6,7 +6,7 @@
     <title>SEL社會情緒學習教學活動設計神助手系統</title>
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -105,7 +105,6 @@
     #download-doc-button { background-color: var(--button-action-download-bg); } #download-doc-button:hover { background-color: var(--button-action-download-hover-bg); }
     #download-ppt-button { background-color: var(--button-action-ppt-bg); } #download-ppt-button:hover { background-color: var(--button-action-ppt-hover-bg); }
     .copy-status { color: var(--success-color); font-weight: 500; min-height: 1.2em; display: inline-block; padding: 0 10px; transition: all 0.2s; }
-    /* NEW CSS RULE for better alignment */
     .copy-status:empty { min-height: 0; padding: 0; margin: 0; }
     .copyright { text-align: center; font-size: 0.8em; color: #888; margin-top: 30px; padding-bottom: 10px; } .copyright i { margin-right: 5px; color: var(--secondary-color); }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; animation: fadeInModal 0.3s; }
@@ -117,6 +116,37 @@
     .modal-content code { background-color: var(--input-bg); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
     .modal-content a { color: var(--secondary-color); font-weight: 500; text-decoration: none; }
     .modal-content a:hover { text-decoration: underline; }
+    
+    /* --- Mascot Styles --- */
+    #mascot {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 120px;
+        height: auto;
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 999;
+    }
+    #mascot:hover {
+        transform: scale(1.15) rotate(-8deg);
+        animation: mascot-shake 0.5s infinite alternate;
+    }
+    .particle {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1001; /* Above mascot */
+        transition: transform 1s ease-out, opacity 1s ease-out;
+    }
+    @keyframes mascot-shake {
+        0% { transform: scale(1.15) rotate(-8deg); }
+        100% { transform: scale(1.15) rotate(8deg); }
+    }
+
+
     @media (max-width: 768px) {
         body { padding: 15px; } h1 { font-size: 1.6em; } .container { padding: 15px; } .chat-log { height: calc(100vh - 350px); }
         .bot-avatar { width: 35px; height: 35px; margin-right: 10px; }
@@ -132,6 +162,13 @@
         #send-button, #reset-button { padding: 10px; font-size: 0.95em; flex-grow: 1; margin: 0 2%; }
         .option-buttons { margin-top: 12px; padding-top: 12px; } .option-btn { font-size: 0.8em; padding: 7px 12px; }
         .action-buttons { gap: 10px; } .action-btn { padding: 9px 16px; font-size: 0.9em; }
+        
+        /* Mascot on mobile */
+        #mascot {
+            width: 80px;
+            bottom: 15px;
+            left: 15px;
+        }
     }
 </style>
 </head>
@@ -170,7 +207,6 @@
     <div class="container output-section" id="output-section">
         <h2><i class="fas fa-file-alt"></i> SEL教學活動設計成果</h2>
         <div id="output-content"></div>
-        <!-- MODIFIED: Reordered buttons for better flow and balance -->
         <div class="action-buttons">
             <button class="action-btn" id="copy-button" title="複製 Markdown 格式內容"><i class="fas fa-copy"></i> 複製 Markdown</button>
             <span id="copy-status" class="copy-status"></span>
@@ -197,14 +233,15 @@
         </div>
     </div>
     
+    <!-- NEW: Mascot Element -->
+    <img id="mascot" src="image/LiyuChillGuy.svg" alt="LiyuChillGuy Mascot">
+
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <script type="module">
         import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-        // The JavaScript code is identical to the previous version.
-        // I've just included it here to provide the complete, functional file.
         const dom = {
             chatLog: document.getElementById('chat-log'), userInput: document.getElementById('user-input'),
             sendButton: document.getElementById('send-button'), resetButton: document.getElementById('reset-button'),
@@ -217,6 +254,7 @@
             openApiKeyModalLink: document.querySelector('.api-tutorial-link'),
             downloadDocButton: document.getElementById('download-doc-button'),
             downloadPptButton: document.getElementById('download-ppt-button'),
+            mascot: document.getElementById('mascot'), // Added mascot to DOM object
         };
         
         let genAI = null, model = null, conversationHistory = [], currentStep = 0;
@@ -236,6 +274,7 @@
         const suggestionMap = { selThemes: ["自我覺察 (Self-awareness)", "自我管理 (Self-management)", "社會覺察 (Social awareness)", "人際技巧 (Relationship skills)", "負責任的決策 (Responsible decision-making)"], ageGroups: ["國小低年級 (1-2年級)", "國小中年級 (3-4年級)", "國小高年級 (5-6年級)", "國中 (7-9年級)", "高中 (10-12年級)"], activityFormats: ["角色扮演", "小組討論", "情境分析", "繪本/故事閱讀", "影片觀賞與討論", "藝術創作 (繪畫/手作)", "靜心/正念練習"] };
         const exampleAnswers = [ "人際技巧 (Relationship skills)", "國小中年級 (3-4年級)", "學習同理傾聽與給予回饋", "角色扮演", "傾聽魔法耳", "小明很興奮地想跟小華分享他新買的玩具，但小華正低頭看書，沒有理他。", "1. 如果你是小明，你會有什麼感覺？\n2. 如果你是小華，你覺得小明為什麼要找你？\n3. 什麼樣的回應方式，可以讓兩個好朋友都感到被尊重？" ];
 
+        // --- Existing Chat Logic (no changes needed) ---
         const getActiveApiKey = () => dom.apiKeyInput.value.trim();
         const initializeAI = () => {
             const apiKey = getActiveApiKey(); if (!apiKey) { genAI = null; model = null; return false; }
@@ -295,7 +334,6 @@
         }
         function generateMarkdownOutput() { return `# SEL 教學活動設計: ${getData("activityName")}\n\n## 一、 活動基本資訊\n- **SEL 核心素養:** ${getData("selTheme")}\n- **適用年級:** ${getData("ageGroup")}\n- **具體學習目標:** ${getData("learningGoal")}\n- **活動形式:** ${getData("activityFormat")}\n\n## 二、 教學活動教案\n- **活動名稱:** ${getData("activityName")}\n- **預估時間:** ${getData("lessonPlan.time")}\n- **準備材料:** ${getData("lessonPlan.materials")}\n- **活動流程:**\n    1.  ${getData("lessonPlan.flow.0", "")}\n    2.  ${getData("lessonPlan.flow.1", "")}\n    3.  ${getData("lessonPlan.flow.2", "")}\n\n## 三、 學生學習單\n---\n### ${getData("worksheet.title")}\n**班級:** __________ **姓名:** __________ **座號:** ____\n\n**引導語：** ${getData("worksheet.intro")}\n\n1.  **情境回顧：**\n    > ${getData("worksheet.questions.0.q")}\n\n2.  **核心問題：**\n    > ${getData("worksheet.questions.1.q")}\n\n3.  **生活連結：**\n    > ${getData("worksheet.questions.2.q")}\n\n4.  **心情與收穫：**\n    > ${getData("worksheet.questions.3.q")}\n\n---`;}
         function generateWordContent() { const lessonFlowHtml = getData("lessonPlan.flow", []).map(step => `<li style="margin-bottom: 12px;">${step.replace(/\n/g, '<br>')}</li>`).join(''); const worksheetQuestionsHtml = getData("worksheet.questions", []).map(item => `<li style="margin-bottom: 20px;"><strong>${item.q}</strong><br><br><br><br><hr style="border:none; border-top: 1px dotted #ccc;"></li>`).join(''); return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset='UTF-8'><title>SEL教學活動-${getData("activityName")}</title><style>body{font-family:'Arial','Noto Sans TC',sans-serif;line-height:1.6;margin:40px;color:#333;}h1,h2,h3,h4{color:#2A9D8F;margin:0 0 15px 0;}h1{text-align:center;font-size:1.8em;}h2{border-bottom:2px solid #83C5BE;padding-bottom:8px;margin-top:35px;font-size:1.5em;}h3{color:#238478;margin-top:25px;font-size:1.2em;}ul, ol{padding-left: 20px;} li{margin-bottom:8px;} strong{font-weight:bold;color:#2A9D8F;}p{margin: 0 0 10px 0;} .worksheet-header{margin-bottom:20px;text-align:center;} .worksheet-header p {display:inline-block; margin: 0 20px;}</style></head><body><h1>SEL 教學活動設計: ${getData("activityName")}</h1><h2>一、 活動基本資訊</h2><ul><li><strong>SEL 核心素養:</strong> ${getData("selTheme")}</li><li><strong>適用年級:</strong> ${getData("ageGroup")}</li><li><strong>具體學習目標:</strong> ${getData("learningGoal")}</li><li><strong>活動形式:</strong> ${getData("activityFormat")}</li></ul><h2>二、 教學活動教案</h2><ul><li><strong>活動名稱:</strong> ${getData("activityName")}</li><li><strong>預估時間:</strong> ${getData("lessonPlan.time")}</li><li><strong>準備材料:</strong> ${getData("lessonPlan.materials")}</li></ul><h3>活動流程</h3><ol>${lessonFlowHtml}</ol><p style="page-break-before: always;"></p><h2>三、 學生學習單</h2><div class="worksheet-header"><h3>${getData("worksheet.title")}</h3><p>班級: __________</p><p>姓名: __________</p><p>座號: ____</p></div><p><strong>引導語：</strong> <em>${getData("worksheet.intro")}</em></p><hr style="margin: 20px 0;"><ol>${worksheetQuestionsHtml}</ol></body></html>`;}
-
         async function generateAndDownloadPptx() {
             const button = dom.downloadPptButton; const originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成...'; button.disabled = true;
@@ -321,7 +359,6 @@
             } catch (error) { console.error("Failed to generate PPTX:", error); alert("抱歉，生成簡報時發生錯誤。");
             } finally { button.innerHTML = originalText; button.disabled = false; }
         }
-
         function displayGeneratedOutput() {
             dom.outputSection.style.display = 'block'; dom.outputContent.innerHTML = '';
             const createSection = (id, title, icon, content) => { const div = document.createElement('div'); div.className = 'output-content-section'; div.id = id; div.innerHTML = `<h3><i class="${icon}"></i> ${title}</h3>${content}`; return div; };
@@ -331,17 +368,13 @@
             dom.outputContent.appendChild(createSection('output-lesson-plan', '2. 教學活動教案', 'fas fa-clipboard-list', lessonPlanContent));
             let worksheetContent = `<h4>${getData("worksheet.title")}</h4><p><em>${getData("worksheet.intro")}</em></p><ol style="padding-left: 20px; margin-top: 15px;">${getData("worksheet.questions", []).map(item => `<li style="margin-bottom: 15px;"><strong>${item.q}</strong><br><br><hr style="border:none; border-top: 1px dotted #ccc;"></li>`).join('')}</ol>`;
             dom.outputContent.appendChild(createSection('output-worksheet', '3. 學生學習單（預覽）', 'fas fa-edit', worksheetContent));
-            
             const markdownOutput = generateMarkdownOutput();
             const wordFileContent = generateWordContent();
-            
             dom.copyButton.onclick = async () => { try { await navigator.clipboard.writeText(markdownOutput); dom.copyStatus.textContent = '已複製！'; dom.copyStatus.style.color = 'var(--success-color)'; setTimeout(() => { dom.copyStatus.textContent = ''; }, 2000); } catch (err) { dom.copyStatus.textContent = '複製失敗'; dom.copyStatus.style.color = 'var(--error-color)'; } };
             dom.downloadDocButton.onclick = () => { try { const blob = new Blob(['\ufeff', wordFileContent], { type: 'application/msword;charset=utf-8' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `SEL教學活動-${getData("activityName", "未命名")}.doc`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch (error) { alert("無法產生下載文件。"); } };
             dom.downloadPptButton.onclick = generateAndDownloadPptx;
-
             setTimeout(() => { dom.outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
-
         function resetConversation() {
             console.log("Resetting conversation...");
             conversationHistory = []; currentStep = 0;
@@ -369,6 +402,48 @@
         dom.apiKeyModal.addEventListener('click', (e) => { if (e.target === dom.apiKeyModal || e.target.classList.contains('modal-close')) { dom.apiKeyModal.style.display = 'none'; } });
         
         resetConversation();
+
+        // --- NEW: Mascot Interaction Logic ---
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            document.body.appendChild(particle);
+
+            // Randomize particle properties
+            const size = Math.floor(Math.random() * 10 + 5);
+            const colors = ['#2A9D8F', '#83C5BE', '#E9C46A', '#F4A261', '#E76F51'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.background = color;
+            particle.style.left = `${x - size / 2}px`;
+            particle.style.top = `${y - size / 2}px`;
+
+            const destinationX = (Math.random() - 0.5) * 300;
+            const destinationY = (Math.random() - 0.5) * 300;
+            const rotation = Math.random() * 520;
+            const delay = Math.random() * 200;
+
+            // Animate the particle
+            requestAnimationFrame(() => {
+                particle.style.transform = `translate(${destinationX}px, ${destinationY}px) rotate(${rotation}deg)`;
+                particle.style.opacity = '0';
+            });
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 1000 + delay); // 1000ms is transition duration
+        }
+
+        dom.mascot.addEventListener('click', (e) => {
+            // Create a burst of particles
+            for (let i = 0; i < 30; i++) {
+                createParticle(e.clientX, e.clientY);
+            }
+        });
+
     </script>
 </body>
 </html>
