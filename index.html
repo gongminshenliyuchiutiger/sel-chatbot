@@ -278,7 +278,7 @@
         const getActiveApiKey = () => dom.apiKeyInput.value.trim();
         const initializeAI = () => {
             const apiKey = getActiveApiKey(); if (!apiKey) { genAI = null; model = null; return false; }
-            try { if (!genAI || !model || genAI.apiKey !== apiKey) { genAI = new GoogleGenerativeAI(apiKey); model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }); } return true; } catch (error) { console.error("Failed to initialize GoogleGenerativeAI:", error); genAI = null; model = null; appendMessage('bot', `<b style='color: var(--error-color);'>警告：</b> API 金鑰無效或初始化失敗。`); return false; }
+            try { if (!genAI || !model || genAI.apiKey !== apiKey) { genAI = new GoogleGenerativeAI(apiKey); model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); } return true; } catch (error) { console.error("Failed to initialize GoogleGenerativeAI:", error); genAI = null; model = null; appendMessage('bot', `<b style='color: var(--error-color);'>警告：</b> API 金鑰無效或初始化失敗。`); return false; }
         };
         const getData = (path, defaultValue = "<em>未提供</em>") => {
             try { const keys = path.split('.'); let current = generatedData; for (const key of keys) { if (current === null || typeof current !== 'object' || !(key in current)) { return defaultValue; } current = current[key]; } return current === "" || current === null || current === undefined ? defaultValue : current; } catch (e) { return defaultValue; }
